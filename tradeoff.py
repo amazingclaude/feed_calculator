@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 #1. nutrition dataframe, in the form of nutrition.xlsx
 #2. ingredients dataframe, in the form of quantity.xlsx
 #3. costs dataframe, in the form of costs.xlsx
+
+#the output is two vectors, cost_vec and MaxNumVec, which 
+#can be used to draw the plot
 #############################################################
 
 #====Read the dataframes mentioned above=====

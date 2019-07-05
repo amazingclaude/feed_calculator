@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 #2. ingredients dataframe, in the form of quantity.xlsx
 #3. costs dataframe, in the form of costs.xlsx
 #4. input of the maximum ingredients used.
+
+#The output is result_df_extension1_1
 #############################################################
 
 #Interface for selecting the Number of ingredients
