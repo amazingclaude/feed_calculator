@@ -89,16 +89,13 @@ prob2=cost_calculation(MaxNum,nutrition_df, food_items, costs)
 end=time.time()
 print('Total solving time is:',end-start,'seconds')
 #=============================================================
-
-#=====Print Function============================	
+		
 print("Solution"+"-"*100)
 for v in prob2.variables():
     if v.varValue>0 and v.name[0]=='P':
         print(v.name, "=", v.varValue,'kg')
 print("The total cost of this balanced diet is: {} in Nigeria Currency ".format(round(value(prob2.objective),2)))
-#=====Print Function=============================
 
-#===Generate the result dataframe================
 Ingredients=[]
 Amount=[]
 for v in prob2.variables():
@@ -109,4 +106,3 @@ total_cost=round(value(prob2.objective),2)
 result_df_extension1_1={'Ingredients':Ingredients,'Amount':Amount}
 result_df_extension1_1=pd.DataFrame(result_df_extension1_1)
 result_df_extension1_1['total_cost']=total_cost
-#=================================================
