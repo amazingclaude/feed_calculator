@@ -2,6 +2,7 @@ import pandas as pd
 from pulp import *
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 #######Interface########################################
 #The input are three dataframes
@@ -12,6 +13,11 @@ import matplotlib.pyplot as plt
 #the output is two vectors, cost_vec and MaxNumVec, which 
 #can be used to draw the plot
 #############################################################
+
+#===Add the time measurement=================
+start=time.time()
+#============================================
+
 
 #====Read the dataframes mentioned above=====
 df = pd.read_excel("nutrition.xlsx",nrows=64)
@@ -81,6 +87,11 @@ for MaxNum in range (3,12):
     MaxNumVec.append(MaxNum)
     cost_vec.append(cost)
 #========================================================
+
+#=========End of the solving time===========================
+end=time.time()
+print('Total solving time is:',end-start,'seconds')
+#=============================================================
 
 #====Draw the plot==============================
 plt.plot(MaxNumVec,cost_vec)

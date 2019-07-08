@@ -2,6 +2,7 @@ import pandas as pd
 from pulp import *
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 #######Interface###########################################
 #The input are four dataframes
@@ -13,7 +14,9 @@ import matplotlib.pyplot as plt
 #The output is result_df_extention1_0
 #############################################################
 
-
+#===Add the time measurement=================
+start=time.time()
+#============================================
 
 #====Read the dataframes mentioned above=====
 df = pd.read_excel("nutrition.xlsx",nrows=64)
@@ -82,6 +85,12 @@ for i in range(len(ingre_percentage_df)):
 
 # The problem is solved using PuLP's choice of Solver
 prob3.solve(pulp.PULP_CBC_CMD())
+
+#=========End of the solving time===========================
+end=time.time()
+print('Total solving time is:',end-start,'seconds')
+#=============================================================
+
 print("Solution"+"-"*100)
 
 for v in prob3.variables():

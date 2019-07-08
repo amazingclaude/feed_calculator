@@ -2,6 +2,7 @@ import pandas as pd
 from pulp import *
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 #######Interface########################################
 #The input are three dataframes
@@ -12,6 +13,11 @@ import matplotlib.pyplot as plt
 
 #The output is result_df_extension1_1
 #############################################################
+
+#===Add the time measurement=================
+start=time.time()
+#============================================
+
 
 #Interface for selecting the Number of ingredients
 MaxNum=3
@@ -74,6 +80,10 @@ prob2+= lpSum([food_chosen[f] for f in food_items])<=MaxNum
 # The problem is solved using PuLP's choice of Solver
 prob2.solve(pulp.PULP_CBC_CMD())
 
+#=========End of the solving time===========================
+end=time.time()
+print('Total solving time is:',end-start,'seconds')
+#=============================================================
     
 print("Solution"+"-"*100)
 for v in prob2.variables():

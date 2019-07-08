@@ -2,6 +2,7 @@ import pandas as pd
 from pulp import *
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 #######Interface########################################
 #The input are three dataframes
@@ -12,11 +13,16 @@ import matplotlib.pyplot as plt
 #The output is result_df
 #############################################################
 
+#===Add the time measurement=================
+start=time.time()
+#============================================
+
 #====Read the dataframes mentioned above=====
 df = pd.read_excel("nutrition.xlsx",nrows=64)
 nutrition_df=pd.read_excel('quantity.xlsx')
 cost_df_raw=pd.read_excel('costs.xlsx')
 #===============================================
+
 
 #=====Process the dataframes=============================
 np.random.seed(0)
@@ -61,6 +67,10 @@ prob.writeLP("SimpleDietProblem.lp")
 # The problem is solved using PuLP's choice of Solver
 prob.solve(pulp.PULP_CBC_CMD())
 
+#=========End of the solving time===========================
+end=time.time()
+print('Total solving time is:',end-start,'seconds')
+#=============================================================
 print("Solution"+"-"*100)
 for v in prob.variables():
     if v.varValue>0 and v.name[0]=='P':
@@ -73,7 +83,9 @@ for v in prob.variables():
     if v.varValue>0 and v.name[0]=='P':
         Ingredients.append(v.name[8:])
         Amount.append(v.varValue)
+#=====Write into the dataframe====================
 total_cost=round(value(prob.objective),2)
 result_df={'Ingredients':Ingredients,'Amount':Amount}
 result_df=pd.DataFrame(result_df)
 result_df['total_cost']=total_cost
+#===================================================
