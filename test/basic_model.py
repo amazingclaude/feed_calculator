@@ -67,8 +67,8 @@ def cost_calculation(df,nutrition_df,cost_df_raw):
 	prob.solve(pulp.PULP_CBC_CMD())
 
 	#=========End of the solving time===========================
-	end=time.time()
-	print('Total solving time is:',end-start,'seconds')
+	# end=time.time()
+	# print('Total solving time is:',end-start,'seconds')
 	#=============================================================
 	
 	#====Print the result==================================

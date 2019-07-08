@@ -25,25 +25,22 @@ cost_df_raw=pd.read_excel('costs.xlsx')
 ingre_percentage_df=pd.read_excel('ingredients_percentage.xlsx')
 #===============================================
 
-#=====Process the dataframes=============================
-np.random.seed(0)
-df = pd.read_excel("nutrition.xlsx",nrows=64)
-cost_df_raw=pd.read_excel('costs.xlsx')
-nutrition_df=pd.read_excel('quantity.xlsx')
-df.columns = ['ingredient' if col.startswith('INGREDIENT') else col for col in df]
-food_items = list(df['ingredient'])
-food_items_df=pd.DataFrame(food_items,columns=['food'])
-costs_df=food_items_df.merge(cost_df_raw,left_on='food',right_on='Ingredients')
-costs_df=costs_df.drop('food',axis=1)
-costs={}
-for i in range (len(costs_df)):
-    costs[costs_df['Ingredients'].iloc[i]]=costs_df['Price'].iloc[i]
+
+
+def cost_calculation(df, nutrition_df, cost_df_raw,ingre_percentage_df):
+
+	#=====Process the dataframes=============================
+	np.random.seed(0)
+	df.columns = ['ingredient' if col.startswith('INGREDIENT') else col for col in df]
+	food_items = list(df['ingredient'])
+	food_items_df=pd.DataFrame(food_items,columns=['food'])
+	costs_df=food_items_df.merge(cost_df_raw,left_on='food',right_on='Ingredients')
+	costs_df=costs_df.drop('food',axis=1)
+	costs={}
+	for i in range (len(costs_df)):
+		costs[costs_df['Ingredients'].iloc[i]]=costs_df['Price'].iloc[i]
 
 #===========================================================
-
-def cost_calculation(nutrition_df, food_items, costs):
-
-
 	#Extract all the nutritions included
 	nutrition=[]
 	for i in range (len(nutrition_df)):
@@ -90,30 +87,32 @@ def cost_calculation(nutrition_df, food_items, costs):
 	# The problem is solved using PuLP's choice of Solver
 	prob3.solve(pulp.PULP_CBC_CMD())
 
-	return prob3
 
-prob3=cost_calculation(nutrition_df, food_items, costs)
 
-#=========End of the solving time===========================
-end=time.time()
-print('Total solving time is:',end-start,'seconds')
-#=============================================================
+	#=========End of the solving time===========================
+	# end=time.time()
+	# print('Total solving time is:',end-start,'seconds')
+	#=============================================================
+	
+	#====Printing================================
+	# print("Solution"+"-"*100)
 
-print("Solution"+"-"*100)
-
-for v in prob3.variables():
-    if v.varValue>0 and v.name[0]=='P':
-#     if v.varValue>0 :
-        print(v.name, "=", v.varValue,'kg')
-print("The total cost of this balanced diet is: {} in Nigeria Currency ".format(round(value(prob3.objective),2)))
-
-Ingredients=[]
-Amount=[]
-for v in prob3.variables():
-    if v.varValue>0 and v.name[0]=='P':
-        Ingredients.append(v.name[8:])
-        Amount.append(v.varValue)
-total_cost=round(value(prob3.objective),2)
-result_df_extention1_0={'Ingredients':Ingredients,'Amount':Amount}
-result_df_extention1_0=pd.DataFrame(result_df_extention1_0)
-result_df_extention1_0['total_cost']=total_cost
+	# for v in prob3.variables():
+		# if v.varValue>0 and v.name[0]=='P':
+	# #     if v.varValue>0 :
+			# print(v.name, "=", v.varValue,'kg')
+	# print("The total cost of this balanced diet is: {} in Nigeria Currency ".format(round(value(prob3.objective),2)))
+	#==============================================
+	
+	
+	Ingredients=[]
+	Amount=[]
+	for v in prob3.variables():
+		if v.varValue>0 and v.name[0]=='P':
+			Ingredients.append(v.name[8:])
+			Amount.append(v.varValue)
+	total_cost=round(value(prob3.objective),2)
+	result_df_extention1_0={'Ingredients':Ingredients,'Amount':Amount}
+	result_df_extention1_0=pd.DataFrame(result_df_extention1_0)
+	result_df_extention1_0['total_cost']=total_cost
+	return result_df_extention1_0
