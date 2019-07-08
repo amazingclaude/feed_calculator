@@ -38,53 +38,61 @@ costs_df=costs_df.drop('food',axis=1)
 costs={}
 for i in range (len(costs_df)):
     costs[costs_df['Ingredients'].iloc[i]]=costs_df['Price'].iloc[i]
-#Extract all the nutritions included
-nutrition=[]
-for i in range (len(nutrition_df)):
-    nutrition.append(nutrition_df.iloc[i][0])
-#Create dictionay for every single nutrition. The dictionary includes the amount contained in different ingredient.
-for i in range(len(nutrition)):
-    vars()[nutrition[i]] = dict(zip(food_items,df[nutrition[i]]))
-food_vars = LpVariable.dicts("Portion",food_items,lowBound=0,cat='Continuous')
+
 #===========================================================
 
-prob3 = LpProblem("Smallholder Layer Starter Diet",LpMinimize)
-prob3 += lpSum([costs[i]*food_vars[i] for i in food_items]), "Total Cost of the balanced diet"
-food_chosen = LpVariable.dicts("Chosen",food_items,0,1,cat='Integer')
-
-for i in range(len(nutrition_df)):
-    n = vars()[nutrition_df.iloc[i,0]]
-#     print(n)
-#     print('Min',i)
-    
-    prob3 += lpSum([n[f]* food_vars[f] for f in food_items]) >= nutrition_df['Minimum'][i]
-    
-    if (i in nutrition_df[nutrition_df['Maximum']>0].index):
-#         print('Max',i)
-        prob3 += lpSum([n[f]* food_vars[f] for f in food_items]) <= nutrition_df['Maximum'][i]
-#     print('------')
-
-for f in food_items:
-    prob3 += food_vars[f]>= 0
-    prob3 += food_vars[f]<= food_chosen[f]*100
-
-#Unlock the maximum number of the ingredients (so that extension 1_1 is combined.)   
-# prob3+= lpSum([food_chosen[f] for f in food_items])<=6
+def cost_calculation(nutrition_df, food_items, costs):
 
 
-for i in range(len(ingre_percentage_df)):
-    pmin=ingre_percentage_df.iloc[i][2]/100
-    x_i=ingre_percentage_df.iloc[i][0]
-    prob3 += -100*(1-food_chosen[x_i])+pmin*lpSum([food_vars[f] for f in food_items])<=food_vars[x_i]
-    
-    if (i in ingre_percentage_df[ingre_percentage_df['Maximum']>0].index):
-#         print('Max',i)
-        pmax=ingre_percentage_df.iloc[i][3]/100
-        prob3 += pmax*lpSum([food_vars[f] for f in food_items])>=food_vars[x_i]
-                                                                          
+	#Extract all the nutritions included
+	nutrition=[]
+	for i in range (len(nutrition_df)):
+		nutrition.append(nutrition_df.iloc[i][0])
+	#Create dictionay for every single nutrition. The dictionary includes the amount contained in different ingredient.
+	for i in range(len(nutrition)):
+		vars()[nutrition[i]] = dict(zip(food_items,df[nutrition[i]]))
+	food_vars = LpVariable.dicts("Portion",food_items,lowBound=0,cat='Continuous')
+	prob3 = LpProblem("Smallholder Layer Starter Diet",LpMinimize)
+	prob3 += lpSum([costs[i]*food_vars[i] for i in food_items]), "Total Cost of the balanced diet"
+	food_chosen = LpVariable.dicts("Chosen",food_items,0,1,cat='Integer')
 
-# The problem is solved using PuLP's choice of Solver
-prob3.solve(pulp.PULP_CBC_CMD())
+	for i in range(len(nutrition_df)):
+		n = vars()[nutrition_df.iloc[i,0]]
+	#     print(n)
+	#     print('Min',i)
+		
+		prob3 += lpSum([n[f]* food_vars[f] for f in food_items]) >= nutrition_df['Minimum'][i]
+		
+		if (i in nutrition_df[nutrition_df['Maximum']>0].index):
+	#         print('Max',i)
+			prob3 += lpSum([n[f]* food_vars[f] for f in food_items]) <= nutrition_df['Maximum'][i]
+	#     print('------')
+
+	for f in food_items:
+		prob3 += food_vars[f]>= 0
+		prob3 += food_vars[f]<= food_chosen[f]*100
+
+	#Unlock the maximum number of the ingredients (so that extension 1_1 is combined.)   
+	# prob3+= lpSum([food_chosen[f] for f in food_items])<=6
+
+
+	for i in range(len(ingre_percentage_df)):
+		pmin=ingre_percentage_df.iloc[i][2]/100
+		x_i=ingre_percentage_df.iloc[i][0]
+		prob3 += -100*(1-food_chosen[x_i])+pmin*lpSum([food_vars[f] for f in food_items])<=food_vars[x_i]
+		
+		if (i in ingre_percentage_df[ingre_percentage_df['Maximum']>0].index):
+	#         print('Max',i)
+			pmax=ingre_percentage_df.iloc[i][3]/100
+			prob3 += pmax*lpSum([food_vars[f] for f in food_items])>=food_vars[x_i]
+																			  
+
+	# The problem is solved using PuLP's choice of Solver
+	prob3.solve(pulp.PULP_CBC_CMD())
+
+	return prob3
+
+prob3=cost_calculation(nutrition_df, food_items, costs)
 
 #=========End of the solving time===========================
 end=time.time()

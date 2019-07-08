@@ -41,50 +41,55 @@ costs_df=costs_df.drop('food',axis=1)
 costs={}
 for i in range (len(costs_df)):
     costs[costs_df['Ingredients'].iloc[i]]=costs_df['Price'].iloc[i]
-#Extract all the nutritions included
-nutrition=[]
-for i in range (len(nutrition_df)):
-    nutrition.append(nutrition_df.iloc[i][0])
-#Create dictionay for every single nutrition. The dictionary includes the amount contained in different ingredient.
-for i in range(len(nutrition)):
-    vars()[nutrition[i]] = dict(zip(food_items,df[nutrition[i]]))
-food_vars = LpVariable.dicts("Portion",food_items,lowBound=0,cat='Continuous')
+
 #===========================================================
 
+def cost_calculation(MaxNum,nutrition_df, food_items, costs):
 
+	#Extract all the nutritions included
+	nutrition=[]
+	for i in range (len(nutrition_df)):
+		nutrition.append(nutrition_df.iloc[i][0])
+	#Create dictionay for every single nutrition. The dictionary includes the amount contained in different ingredient.
+	for i in range(len(nutrition)):
+		vars()[nutrition[i]] = dict(zip(food_items,df[nutrition[i]]))
+	food_vars = LpVariable.dicts("Portion",food_items,lowBound=0,cat='Continuous')
+	prob2 = LpProblem("Smallholder Layer Starter Diet",LpMinimize)
 
-prob2 = LpProblem("Smallholder Layer Starter Diet",LpMinimize)
+	food_chosen = LpVariable.dicts("Chosen",food_items,0,1,cat='Integer')
 
-food_chosen = LpVariable.dicts("Chosen",food_items,0,1,cat='Integer')
+	# The objective function is added to 'prob' first
+	prob2 += lpSum([costs[i]*food_vars[i] for i in food_items]), "Total Cost of the balanced diet"
 
-# The objective function is added to 'prob' first
-prob2 += lpSum([costs[i]*food_vars[i] for i in food_items]), "Total Cost of the balanced diet"
+	for i in range(len(nutrition_df)):
+		n = vars()[nutrition_df.iloc[i,0]]
+	#     print(n)
+	#     print('Min',i)
 
-for i in range(len(nutrition_df)):
-    n = vars()[nutrition_df.iloc[i,0]]
-#     print(n)
-#     print('Min',i)
+		prob2 += lpSum([n[f]* food_vars[f] for f in food_items]) >= nutrition_df['Minimum'][i]
+		if (i in nutrition_df[nutrition_df['Maximum']>0].index):
+	#         print('Max',i)
+			prob2 += lpSum([n[f]* food_vars[f] for f in food_items]) <= nutrition_df['Maximum'][i]
+	#     print('------')
 
-    prob2 += lpSum([n[f]* food_vars[f] for f in food_items]) >= nutrition_df['Minimum'][i]
-    if (i in nutrition_df[nutrition_df['Maximum']>0].index):
-#         print('Max',i)
-        prob2 += lpSum([n[f]* food_vars[f] for f in food_items]) <= nutrition_df['Maximum'][i]
-#     print('------')
+	for f in food_items:
+	#     prob2 += food_vars[f]>= food_chosen[f]*0.1
+		prob2 += food_vars[f]>= 0
 
-for f in food_items:
-#     prob2 += food_vars[f]>= food_chosen[f]*0.1
-    prob2 += food_vars[f]>= 0
-
-    prob2 += food_vars[f]<= food_chosen[f]*1e5
-prob2+= lpSum([food_chosen[f] for f in food_items])<=MaxNum
-# The problem is solved using PuLP's choice of Solver
-prob2.solve(pulp.PULP_CBC_CMD())
+		prob2 += food_vars[f]<= food_chosen[f]*1e5
+	prob2+= lpSum([food_chosen[f] for f in food_items])<=MaxNum
+	# The problem is solved using PuLP's choice of Solver
+	prob2.solve(pulp.PULP_CBC_CMD())
+	
+	return prob2
+	
+prob2=cost_calculation(MaxNum,nutrition_df, food_items, costs)
 
 #=========End of the solving time===========================
 end=time.time()
 print('Total solving time is:',end-start,'seconds')
 #=============================================================
-    
+		
 print("Solution"+"-"*100)
 for v in prob2.variables():
     if v.varValue>0 and v.name[0]=='P':
